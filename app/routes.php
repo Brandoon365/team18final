@@ -39,9 +39,9 @@ Route::get('/ViewTeams', function() {
 			$users = User::join('users', 'team.member', '=', 'user.id')->get();
 
 			$filledTeams[$team->projectID] = true;
-			echo("Project name: $team->projectID. Members:\n");
+			print("Project name: $team->projectID. Members:\n");
 			foreach ($users as $user) {
-				echo("$user->last, $user-first\n");
+				print("$user->last, $user-first\n");
 			}
 		}
 	}
@@ -49,40 +49,38 @@ Route::get('/ViewTeams', function() {
 
 Route::get('/GenerateTeams', function() {
 	$users = User::where('teamFirst', '=', '1')->get();
-	$projects = Project::all()->get();
-	$remainingUsers = User::all()->get();
+	$projects = Project::all();
+	$remainingUsers = User::all();
 
 	// Process by project preference first
 	foreach ($projects as $project) {
-		$potentialTeammates = User::where('preference1', '=', $project->id);
-		$max = $project->max;
-		// Note that this may not categorize all people w/ this pref
-		// Catch-all code at end
-		for ($i = 0; $i < $max; $i++) {
+		$potentialTeammates = User::where('preference1', '=', $project->id)->get();
+		
+		$potentialTeammates->each(function($teammate) {
 			$team = new Team;
 			$team->projectID = $project->id;
-			$team->member = $potentialTeammates[$i];
+			$team->member = $teammate->id;
 			$team->save();
-		}
-		$toRemove = $potentialTeammates[$i];
-		unset($remainingUsers[$i]);
+			//Remove user from remaining list
+		});
 	}
 
-	$teams = Team::all()->get();
+	$teams = Team::all();
 	foreach ($remainingUsers as $rem) {
 		foreach ($projects as $proj) {
 			$max = $proj->max;
-			$num = count( Teams::where('projectID', '=', $proj->id) );
+			$num = count( Team::where('projectID', '=', $proj->id) );
 			if ($num + 1 <= $max) {
 				$team = new Team;
 				$team->projectID = $proj->id;
-				$team->member = $rem;
+				$team->member = $rem->id;
 				$team->save();
 				break;
 			}
 		}
 	}
-})
+	return Redirect::intended('/ViewTeams');
+});
 
 
 Route::post('/', function() {
