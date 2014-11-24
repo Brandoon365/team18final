@@ -68,7 +68,7 @@ Route::get('/GenerateTeams', function() {
 	$teams = Team::all();
 	foreach ($remainingUsers as $rem) {
 		foreach ($projects as $proj) {
-			$max = ($proj->max > count($remainingUsers) ? $proj->max : count($remainingUsers);
+			$max = ($proj->max > count($remainingUsers) ) ? $proj->max : count($remainingUsers);
 			$num = count( Team::where('projectID', '=', $proj->id) );
 
 			if ($num + 1 <= $max) {
