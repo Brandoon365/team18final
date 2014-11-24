@@ -15,11 +15,17 @@
  * This will display the home page
  */
 Route::get('/', function() {
+	
 	if(!Auth::check()) {
 		return View::make('field.home');
 	}
 	else {
-		return View::make('field.home');
+		if(Auth::user()->is_admin) {
+			return Redirect::intended('/admin');
+		}
+		else {
+			return Redirect::intended('/student');
+		}
 	}
 });
 
@@ -88,14 +94,19 @@ Route::post('/', function() {
 		'password' => $password
 	);
 	if(Auth::attempt($credentials)) {
-		return Redirect::intended('/'.Auth::user()->first.Auth::user()->last);
+		if(Auth::user()->is_admin) {
+			return Redirect::intended('/admin');
+		}
+		else {
+			return Redirect::intended('/student');
+		}
 	}
 	else {
 		return Redirect::back()->withInput()->with('error', "Invalid Credentials");
 	}
 });
 
-Route::get('/{user}', function() {
+Route::get('/student', function() {
 	if(Auth::check()) {
 		return View::make('field.form');
 	}
@@ -104,7 +115,7 @@ Route::get('/{user}', function() {
 	}
 });
 
-Route::post('/{user}', function() {
+Route::post('/student', function() {
 	
 	$user=User::whereEmail(Auth::user()->email);
 	$userInfo = array(
@@ -129,4 +140,28 @@ Route::post('/{user}', function() {
 	
 	
 	return Redirect::back()->with('message', 'Successfully updated preferences');
+});
+
+Route::get('/admin', function() {
+	if(Auth::check()) {
+		if(Auth::user()->is_admin) {
+			return View::make('field.admin');
+		}
+		else {
+			return Redirect::intended('/student');
+		}
+	}
+	else {
+		return Redirect::intended('/');
+	}
+});
+
+Route::get('logout', function() {
+	Auth::logout();
+	return Redirect::to('/')->with('message', 'Successfully logged out');
+});
+
+Route::get('/viewTeams', function() {
+	$teams=Teammate::all();
+	var_dump($teams);
 });

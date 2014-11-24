@@ -8,6 +8,10 @@
         <div class="alert alert-warning">
             {{Session::get('error')}}
         </div>
+        @elseif(Session::has('message'))
+        <div class="message">
+            {{Session::get('message')}}
+        </div>
         @endif
         <div class="login-element">{{Form::label('Email')}} {{Form::text('email')}}</div>
         <br>
