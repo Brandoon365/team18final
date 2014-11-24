@@ -1,4 +1,12 @@
 #first_header {
+    display: block;
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+#first_header h1 {
     text-align: center;
 }
 
@@ -14,4 +22,15 @@
 
 .login-element input{
     margin-left: 10px;
+}
+
+#logout {
+    display: inline;
+    position: absolute;
+    right: 2%;
+    top: 2%;
+}
+
+#logout a {
+    position: relative;
 }

@@ -15,6 +15,7 @@
  * This will display the home page
  */
 Route::get('/', function() {
+	
 	if(!Auth::check()) {
 		return View::make('field.home');
 	}
@@ -32,14 +33,14 @@ Route::post('/', function() {
 		'password' => $password
 	);
 	if(Auth::attempt($credentials)) {
-		return Redirect::intended('/'.Auth::user()->first.Auth::user()->last);
+		return Redirect::intended('/student');
 	}
 	else {
 		return Redirect::back()->withInput()->with('error', "Invalid Credentials");
 	}
 });
 
-Route::get('/{user}', function() {
+Route::get('/student', function() {
 	if(Auth::check()) {
 		return View::make('field.form');
 	}
@@ -48,7 +49,7 @@ Route::get('/{user}', function() {
 	}
 });
 
-Route::post('/{user}', function() {
+Route::post('/student', function() {
 	
 	$user=User::whereEmail(Auth::user()->email);
 	$userInfo = array(
@@ -73,4 +74,9 @@ Route::post('/{user}', function() {
 	
 	
 	return Redirect::back()->with('message', 'Successfully updated preferences');
+});
+
+Route::get('logout', function() {
+	Auth::logout();
+	return Redirect::to('/')->with('message', 'Successfully logged out');
 });

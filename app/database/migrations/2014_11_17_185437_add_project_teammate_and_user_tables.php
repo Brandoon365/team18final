@@ -39,6 +39,7 @@ class AddProjectTeammateAndUserTables extends Migration {
                 $table->integer('preference4')->nullable();
                 $table->boolean('teamFirst')->nullable();
                 $table->boolean('is_admin');
+                $table->string('remember_token')->nullable();
             });
 	}
 
