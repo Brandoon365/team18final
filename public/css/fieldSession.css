@@ -1,0 +1,17 @@
+#first_header {
+    text-align: center;
+}
+
+.login-element {
+    margin: 2px;
+}
+
+.footer {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.login-element input{
+    margin-left: 10px;
+}
