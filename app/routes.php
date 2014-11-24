@@ -20,7 +20,12 @@ Route::get('/', function() {
 		return View::make('field.home');
 	}
 	else {
-		return View::make('field.home');
+		if(Auth::user()->is_admin) {
+			return Redirect::intended('/admin');
+		}
+		else {
+			return Redirect::intended('/student');
+		}
 	}
 });
 
@@ -33,7 +38,12 @@ Route::post('/', function() {
 		'password' => $password
 	);
 	if(Auth::attempt($credentials)) {
-		return Redirect::intended('/student');
+		if(Auth::user()->is_admin) {
+			return Redirect::intended('/admin');
+		}
+		else {
+			return Redirect::intended('/student');
+		}
 	}
 	else {
 		return Redirect::back()->withInput()->with('error', "Invalid Credentials");
@@ -76,7 +86,26 @@ Route::post('/student', function() {
 	return Redirect::back()->with('message', 'Successfully updated preferences');
 });
 
+Route::get('/admin', function() {
+	if(Auth::check()) {
+		if(Auth::user()->is_admin) {
+			return View::make('field.admin');
+		}
+		else {
+			return Redirect::intended('/student');
+		}
+	}
+	else {
+		return Redirect::intended('/');
+	}
+});
+
 Route::get('logout', function() {
 	Auth::logout();
 	return Redirect::to('/')->with('message', 'Successfully logged out');
+});
+
+Route::get('/viewTeams', function() {
+	$teams=Teammate::all();
+	var_dump($teams);
 });
