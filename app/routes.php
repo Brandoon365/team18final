@@ -46,7 +46,7 @@ Route::get('/ViewTeams', function() {
 		}
 	}
 
-	return View::make('field.view')->with('teams', Project::all());
+	return View::make('field.view')->with('teams', $teams);
 });
 
 Route::get('/GenerateTeams', function() {
@@ -54,6 +54,49 @@ Route::get('/GenerateTeams', function() {
 	$projects = Project::all();
 	$remainingUsers = User::all();
 
+
+	foreach ($users as $u) {
+		$desiredProject = Project::find( $u->preference1 );
+		$number = count( Team::where('projectID', '=', $desiredProject->id) );
+		if ( $number < $desiredProject->max && $number < $desiredProject->min) {
+			$team = new Team;
+			$team->projectID = $desiredProject->id;
+			$team->member = $u->id;
+			$team->save();
+			continue;
+		}
+
+		$desiredProject = Project::find( $u->preference2 );
+		$number = count( Team::where('projectID', '=', $desiredProject->id) );
+		if ( $number < $desiredProject->max && $number < $desiredProject->min) {
+			$team = new Team;
+			$team->projectID = $desiredProject->id;
+			$team->member = $u->id;
+			$team->save();
+			continue;
+		}
+
+		$desiredProject = Project::find( $u->preference3 );
+		$number = count( Team::where('projectID', '=', $desiredProject->id) );
+		if ( $number < $desiredProject->max && $number < $desiredProject->min) {
+			$team = new Team;
+			$team->projectID = $desiredProject->id;
+			$team->member = $u->id;
+			$team->save();
+			continue;
+		}
+
+		$desiredProject = Project::find( $u->preference4 );
+		$number = count( Team::where('projectID', '=', $desiredProject->id) );
+		if ( $number < $desiredProject->max && $number < $desiredProject->min) {
+			$team = new Team;
+			$team->projectID = $desiredProject->id;
+			$team->member = $u->id;
+			$team->save();
+			continue;
+		}
+
+	}
 	// Process by project preference first
 	$projects->each(function($project) {
 		$potentialTeammates = User::where('preference1', '=', $project->id)->get();
@@ -82,7 +125,7 @@ Route::get('/GenerateTeams', function() {
 			}
 		}
 	}
-	return Redirect::intended('/ViewTeams')->with('teams', Project::all());
+	return Redirect::intended('/ViewTeams')->with('teams', $teams);
 });
 
 
