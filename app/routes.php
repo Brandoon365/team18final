@@ -45,6 +45,8 @@ Route::get('/ViewTeams', function() {
 			}
 		}
 	}
+
+	return View::make('field.view')->with('teams', Project::all());
 });
 
 Route::get('/GenerateTeams', function() {
@@ -53,17 +55,17 @@ Route::get('/GenerateTeams', function() {
 	$remainingUsers = User::all();
 
 	// Process by project preference first
-	foreach ($projects as $project) {
+	$projects->each(function($project) {
 		$potentialTeammates = User::where('preference1', '=', $project->id)->get();
 		
 		$potentialTeammates->each(function($teammate) {
 			$team = new Team;
-			$team->projectID = $project->id;
+			$team->projectID = $teammate->preference1;
 			$team->member = $teammate->id;
 			$team->save();
 			//Remove user from remaining list
 		});
-	}
+	});
 
 	$teams = Team::all();
 	foreach ($remainingUsers as $rem) {
@@ -80,7 +82,7 @@ Route::get('/GenerateTeams', function() {
 			}
 		}
 	}
-	return Redirect::intended('/ViewTeams');
+	return Redirect::intended('/ViewTeams')->with('teams', Project::all());
 });
 
 
