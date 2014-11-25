@@ -46,7 +46,6 @@ Route::get('/ViewTeams', function() {
 	
 	var_dump($teamIDS);
 	die();
-	
 });
 
 Route::get('/GenerateTeams', function() {
@@ -55,23 +54,24 @@ Route::get('/GenerateTeams', function() {
 	$remainingUsers = User::all();
 
 	// Process by project preference first
-	//foreach ($projects as $project) {
-	//	$potentialTeammates = User::where('preference1', '=', $project->id)->get();
-	//	
-	//	$potentialTeammates->each(function($teammate) {
-	//		$team = new Team;
-	//		$team->projectID = $project->id;
-	//		$team->member = $teammate->id;
-	//		$team->save();
-	//		//Remove user from remaining list
-	//	});
-	//}
+	$projects->each(function($project) {
+		$potentialTeammates = User::where('preference1', '=', $project->id)->get();
+		
+		$potentialTeammates->each(function($teammate) {
+			$team = new Team;
+			$team->projectID = $teammate->preference1;
+			$team->member = $teammate->id;
+			$team->save();
+			//Remove user from remaining list
+		});
+	});
 
 	$teams = Team::all();
 	foreach ($remainingUsers as $rem) {
 		foreach ($projects as $proj) {
-			$max = $proj->max;
+			$max = ($proj->max > count($remainingUsers) ) ? $proj->max : count($remainingUsers);
 			$num = count( Team::where('projectID', '=', $proj->id) );
+
 			if ($num + 1 <= $max) {
 				$team = new Team;
 				$team->projectID = $proj->id;
@@ -81,7 +81,7 @@ Route::get('/GenerateTeams', function() {
 			}
 		}
 	}
-	return Redirect::intended('/ViewTeams');
+	return Redirect::intended('/ViewTeams')->with('teams', Project::all());
 });
 
 
