@@ -18,6 +18,7 @@
     margin-left: auto;
     margin-right: auto;
     text-align: center;
+    clear: both;
 }
 
 .login-element input{
@@ -33,4 +34,24 @@
 
 #logout a {
     position: relative;
+}
+
+.teams {
+    width: 80%;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+    clear:both;
+}
+
+.teamContainer {
+    margin-left: auto;
+    margin-right: auto;
+    display: inline;
+    width: 15%;
+    height: 150px;
+    float: left;
+    margin: 2px;
+    border: solid black 2px;
+    text-align: center;
 }

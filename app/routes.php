@@ -31,7 +31,6 @@ Route::get('/', function() {
 
 Route::get('/ViewTeams', function() {
 	$numTeams = count(Team::all());
-	print($numTeams);
 
 	$teamIDS = array();
 	
@@ -44,11 +43,12 @@ Route::get('/ViewTeams', function() {
 		array_push($teamIDS[$team->projectID], $user->first." ".$user->last);
 	}
 	
-	var_dump($teamIDS);
-	die();
+	return View::make('field.teams')->with('teamIDS', $teamIDS);
 });
 
 Route::get('/GenerateTeams', function() {
+	Team::truncate();
+	
 	$users = User::where('teamFirst', '=', '1')->get();
 	$projects = Project::all();
 	$remainingUsers = User::all();
