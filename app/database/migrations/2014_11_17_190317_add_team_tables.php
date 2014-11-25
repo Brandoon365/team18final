@@ -13,6 +13,7 @@ class AddTeamTables extends Migration {
 	public function up()
 	{
 	    Schema::create('teams', function($table) {
+                $table->increments('id');
                 $table->integer('projectID');
                 $table->integer('member');
             });

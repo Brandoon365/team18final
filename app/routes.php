@@ -30,26 +30,24 @@ Route::get('/', function() {
 });
 
 Route::get('/ViewTeams', function() {
-	$teams = Teammate::all();
+	$numTeams = count(Team::all());
 
-	$filledTeams = array();
-	foreach ($teams as $team) {
-		if ($filledTeams[$team->projectID] != true) {
-
-			$users = User::join('users', 'team.member', '=', 'user.id')->get();
-
-			$filledTeams[$team->projectID] = true;
-			print("Project name: $team->projectID. Members:\n");
-			foreach ($users as $user) {
-				print("$user->last, $user-first\n");
-			}
+	$teamIDS = array();
+	
+	for($i = 1; $i <= $numTeams; $i++) {
+		$team = Team::find($i);
+		$user = User::find($team->member);
+		if (!array_key_exists($team->projectID, $teamIDS)) {
+			$teamIDS[$team->projectID] = array();
 		}
+		array_push($teamIDS[$team->projectID], $user->first." ".$user->last);
 	}
-
-	return View::make('field.view')->with('teams', $teams);
+	return View::make('field.teams')->with('teamIDS', $teamIDS);
 });
 
 Route::get('/GenerateTeams', function() {
+	Team::truncate();
+	
 	$users = User::where('teamFirst', '=', '1')->get();
 	$projects = Project::all();
 	$remainingUsers = User::all();
