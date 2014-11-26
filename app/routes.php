@@ -43,6 +43,7 @@ Route::get('/ViewTeams', function() {
 		}
 		array_push($teamIDS[$team->projectID], $user->first." ".$user->last);
 	}
+	ksort($teamIDS);
 	return View::make('field.teams')->with('teamIDS', $teamIDS);
 });
 
@@ -51,10 +52,12 @@ Route::get('/GenerateTeams', function() {
 	
 	$users = User::where('teamFirst', '=', '1')->get();
 	$projects = Project::all();
-	$remainingUsers = User::where('is_admin', '=', 0)->get();
+	$remainingUsers = User::where('teamFirst', '=', 0)->get();
 	
 
 	foreach ($users as $index => $u) {
+		print($u->first." ".$u->last."\n");
+		echo("<br>");
 		$desiredProject = Project::find( $u->preference1 );
 		$number = count( Team::where('projectID', '=', $desiredProject->id) );
 		if ($number < $desiredProject->min) {
@@ -62,7 +65,7 @@ Route::get('/GenerateTeams', function() {
 			$team->projectID = $desiredProject->id;
 			$team->member = $u->id;
 			$team->save();
-			unset($remainingUsers[$index]);
+			//unset($remainingUsers[$index]);
 			continue;
 		}
 
@@ -73,7 +76,7 @@ Route::get('/GenerateTeams', function() {
 			$team->projectID = $desiredProject->id;
 			$team->member = $u->id;
 			$team->save();
-			unset($remainingUsers[$index]);
+			//unset($remainingUsers[$index]);
 			continue;
 		}
 
@@ -84,7 +87,7 @@ Route::get('/GenerateTeams', function() {
 			$team->projectID = $desiredProject->id;
 			$team->member = $u->id;
 			$team->save();
-			unset($remainingUsers[$index]);
+			//unset($remainingUsers[$index]);
 			continue;
 		}
 
@@ -95,34 +98,83 @@ Route::get('/GenerateTeams', function() {
 			$team->projectID = $desiredProject->id;
 			$team->member = $u->id;
 			$team->save();
-			unset($remainingUsers[$index]);
+			//unset($remainingUsers[$index]);
 			continue;
 		}
 
 	}
 	
-	foreach ($projects as $proj) {
-		$count = count(Team::where('projectID', '=', $proj->id)->get());
-		while ($count < $proj->min && $remainingUsers->first() != null) {
-			$team = new Team;
-			$team->projectID = $proj->id;
-			$team->member = $remainingUsers->first()->id;
-			$team->save();
-			$remainingUsers->shift();
-			$count = count(Team::where('projectID', '=', $proj->id)->get());
-		}
-	}
+	//foreach ($projects as $proj) {
+	//	$count = count(Team::where('projectID', '=', $proj->id)->get());
+	//	while ($count < $proj->min && $remainingUsers->first() != null) {
+	//		$team = new Team;
+	//		$team->projectID = $proj->id;
+	//		$team->member = $remainingUsers->first()->id;
+	//		$team->save();
+	//		$remainingUsers->shift();
+	//		$count = count(Team::where('projectID', '=', $proj->id)->get());
+	//	}
+	//}
 	
+	//Assign the rest of the users using a score system.
+	// + 2 to project for each open spot below the minimum
+	// - 2 for every spot above minimum
+	// + 4 for each person on prefer list
+	// - 4 for each person on avoid list
+	// + 4 for pref1, 3 for pref2, etc..
 	foreach ($remainingUsers as $rem) {
+		print($rem->first." ".$rem->last."\n");
+		echo("<br>");
+		$bestProject = 1;
+		$bestScore = 0;
+		$count = 1;
 		foreach ($projects as $proj) {
-			if(count(Team::where('projectID', '=', $proj->id))->get()) {
-				$team = new Team;
-				$team->projectID = $proj->id;
-				$team->member = $remainingUsers->first()->id;
-				$team->save();
-				break;
+			$score = 0;
+			$currentMembers = Team::where('projectID', '=', $count)->get();
+			if(count($currentMembers) < $proj->max) {
+				$score += 2*($proj->min - count($currentMembers));
+				
+				$preferences = Teammate::where('student', '=', $rem->id);
+				foreach ($preferences as $pref) {
+					if (count(Team::where('projectID', '=', $count, 'AND', 'member', '=', $pref->teammate))) {
+						if($pref->prefer) {
+							$score += 4;
+						}
+						else if ($pref->avoid) {
+							$score -= 4;
+						}
+					}
+				}
+				
+				if ($count == $rem->preference1) {
+					$score += 4;
+				}
+				else if ($count == $rem->preference2) {
+					$score += 3;
+				}
+				else if ($count == $rem->preference3) {
+					$score += 2;
+				}
+				else if ($count == $rem->preference4) {
+					$score += 1;
+				}
+				
+				if ($score > $bestScore) {
+					$bestScore = $score;
+					$bestProject = $count;
+				}
 			}
+			else {
+				if($bestProject == $count) {
+					$bestProject++;
+				}
+			}
+			$count++;
 		}
+		$team = new Team;
+		$team->projectID = $bestProject;
+		$team->member = $rem->id;
+		$team->save();
 	}
 	
 	return Redirect::intended('/ViewTeams');

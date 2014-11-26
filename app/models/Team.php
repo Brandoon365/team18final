@@ -9,15 +9,5 @@ class Team extends Eloquent {
 	protected $table = 'teams';
 
 	protected $fillable = array('projectID', 'member');
-        
-        public function getMembers($projectID) {
-            $ids = DB::table('teams')->where('projectID', '=', $projectID);
-            return $ids;
-        }
-        
-        public function getSize($projectID) {
-            $ids = DB::table('teams')->where('projectID', '=', $projectID);
-            return count($ids);
-        }
 
 }

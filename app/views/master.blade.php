@@ -14,6 +14,9 @@
 			<div id="logout">
 				@if(Auth::check())
 					Logged in as {{{Auth::user()->first}}} {{{Auth::user()->last}}} <br>
+					@if(Auth::user()->is_admin)
+						{{link_to('/admin', 'Back to Admin Page')}} <br>
+					@endif
 					{{link_to('logout', 'Log Out')}}
 				@endif
 			</div>
