@@ -21,7 +21,20 @@ class ProjectsTableSeeder extends Seeder {
                 }
                 $count++;
             }
+	    
+	    //Go through and remove the projects with the highest minimum team size
+	    //requirements until all teams can be filled at least to the minimum amount
 
+	    //Get count of users, subtract one for admin
+            $users = count(DB::table('users')->get()) - 1;
+	    
+	    $neededUsers = DB::table('projects')->sum('min');
+	    
+	    while($neededUsers >= $users) {
+		$max = DB::table('projects')->orderBy('min')->first();
+		$neededUsers -= $max->min;
+		Project::destroy($max->id);
+	    }
 	}
 
 }

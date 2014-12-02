@@ -13,6 +13,10 @@ class DatabaseSeeder extends Seeder {
 
 		$this->call('UsersTableSeeder');
 		$this->call('ProjectsTableSeeder');
+		
+		//Comment out this line to remove random
+		//teammate preferences
+		$this->call('TeammatesTableSeeder');
 	}
 
 }

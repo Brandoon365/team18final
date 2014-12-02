@@ -23,8 +23,10 @@ class UsersTableSeeder extends Seeder {
 			$pref3 = rand(1,23);
 			$pref4 = rand(1,23);
 			$team = rand(0,1);
-                        DB::table('users')->insert(array('first'=>trim($parts[0]), 'last'=>trim($parts[1]), 'password'=>Hash::make(trim($parts[2])), 'email'=>trim($parts[3]), 'is_admin'=>false,
-							 'preference1'=>$pref1, 'preference2'=>$pref2, 'preference3'=>$pref3, 'preference4'=>$pref4, 'teamFirst'=>$team));
+                        DB::table('users')->insert(array('first'=>trim($parts[0]), 'last'=>trim($parts[1]), 'password'=>Hash::make(trim($parts[2])), 'email'=>trim($parts[3]), 'is_admin'=>false, 'teamFirst'=>$team,//));
+							 //To remove random preferences remove the line below and
+							 //uncomment the parentheses in the previous line
+							 'preference1'=>$pref1, 'preference2'=>$pref2, 'preference3'=>$pref3, 'preference4'=>$pref4 ));
                     }
                 }
                 $count++;

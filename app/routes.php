@@ -49,73 +49,63 @@ Route::get('/ViewTeams', function() {
 
 Route::get('/GenerateTeams', function() {
 	Team::truncate();
-	
-	$users = User::where('teamFirst', '=', '1')->get();
+	$users = User::where('teamFirst', '=', '0')->get();
 	$projects = Project::all();
-	$remainingUsers = User::where('teamFirst', '=', 0)->get();
-	
+	$remainingUsers = User::where('is_admin', '=', '0')->where('teamFirst', '=', '1')->get();
+	print(count($remainingUsers));
 
-	foreach ($users as $index => $u) {
-		print($u->first." ".$u->last."\n");
-		echo("<br>");
-		$desiredProject = Project::find( $u->preference1 );
-		$number = count( Team::where('projectID', '=', $desiredProject->id) );
-		if ($number < $desiredProject->min) {
-			$team = new Team;
-			$team->projectID = $desiredProject->id;
-			$team->member = $u->id;
-			$team->save();
-			//unset($remainingUsers[$index]);
-			continue;
+	foreach ($users as $u) {
+		if($projects->find($u->preference1)) {
+			$desiredProject = Project::find( $u->preference1 );
+			$number = count( Team::where('projectID', '=', $desiredProject->id) );
+			if ($number < $desiredProject->min) {
+				$team = new Team;
+				$team->projectID = $desiredProject->id;
+				$team->member = $u->id;
+				$team->save();
+				continue;
+			}
 		}
 
-		$desiredProject = Project::find( $u->preference2 );
-		$number = count( Team::where('projectID', '=', $desiredProject->id) );
-		if ($number < $desiredProject->min) {
-			$team = new Team;
-			$team->projectID = $desiredProject->id;
-			$team->member = $u->id;
-			$team->save();
-			//unset($remainingUsers[$index]);
-			continue;
+		if($projects->find($u->preference2)) {
+			$desiredProject = Project::find( $u->preference2 );
+			$number = count( Team::where('projectID', '=', $desiredProject->id) );
+			if ($number < $desiredProject->min) {
+				$team = new Team;
+				$team->projectID = $desiredProject->id;
+				$team->member = $u->id;
+				$team->save();
+				continue;
+			}
 		}
 
-		$desiredProject = Project::find( $u->preference3 );
-		$number = count( Team::where('projectID', '=', $desiredProject->id) );
-		if ($number < $desiredProject->min) {
-			$team = new Team;
-			$team->projectID = $desiredProject->id;
-			$team->member = $u->id;
-			$team->save();
-			//unset($remainingUsers[$index]);
-			continue;
+		if($projects->find($u->preference3)) {
+			$desiredProject = Project::find( $u->preference3 );
+			$number = count( Team::where('projectID', '=', $desiredProject->id) );
+			if ($number < $desiredProject->min) {
+				$team = new Team;
+				$team->projectID = $desiredProject->id;
+				$team->member = $u->id;
+				$team->save();
+				continue;
+			}
 		}
 
-		$desiredProject = Project::find( $u->preference4 );
-		$number = count( Team::where('projectID', '=', $desiredProject->id) );
-		if ($number < $desiredProject->min) {
-			$team = new Team;
-			$team->projectID = $desiredProject->id;
-			$team->member = $u->id;
-			$team->save();
-			//unset($remainingUsers[$index]);
-			continue;
+		if($projects->find($u->preference4)) {
+			$desiredProject = Project::find( $u->preference4 );
+			$number = count( Team::where('projectID', '=', $desiredProject->id) );
+			if ($number < $desiredProject->min) {
+				$team = new Team;
+				$team->projectID = $desiredProject->id;
+				$team->member = $u->id;
+				$team->save();
+				continue;
+			}
 		}
-
+		$remainingUsers->push($u);
 	}
-	
-	//foreach ($projects as $proj) {
-	//	$count = count(Team::where('projectID', '=', $proj->id)->get());
-	//	while ($count < $proj->min && $remainingUsers->first() != null) {
-	//		$team = new Team;
-	//		$team->projectID = $proj->id;
-	//		$team->member = $remainingUsers->first()->id;
-	//		$team->save();
-	//		$remainingUsers->shift();
-	//		$count = count(Team::where('projectID', '=', $proj->id)->get());
-	//	}
-	//}
-	
+	print(count($remainingUsers));
+
 	//Assign the rest of the users using a score system.
 	// + 2 to project for each open spot below the minimum
 	// - 2 for every spot above minimum
@@ -123,20 +113,21 @@ Route::get('/GenerateTeams', function() {
 	// - 4 for each person on avoid list
 	// + 4 for pref1, 3 for pref2, etc..
 	foreach ($remainingUsers as $rem) {
-		print($rem->first." ".$rem->last."\n");
-		echo("<br>");
 		$bestProject = 1;
 		$bestScore = 0;
 		$count = 1;
 		foreach ($projects as $proj) {
+			if($count == 1) {
+				$bestProject = $proj->id;
+			}
 			$score = 0;
-			$currentMembers = Team::where('projectID', '=', $count)->get();
+			$currentMembers = Team::where('projectID', '=', $proj->id)->get();
 			if(count($currentMembers) < $proj->max) {
 				$score += 2*($proj->min - count($currentMembers));
 				
 				$preferences = Teammate::where('student', '=', $rem->id);
 				foreach ($preferences as $pref) {
-					if (count(Team::where('projectID', '=', $count, 'AND', 'member', '=', $pref->teammate))) {
+					if (count(Team::where('projectID', '=', $proj->id, 'AND', 'member', '=', $pref->teammate))) {
 						if($pref->prefer) {
 							$score += 4;
 						}
@@ -146,26 +137,26 @@ Route::get('/GenerateTeams', function() {
 					}
 				}
 				
-				if ($count == $rem->preference1) {
+				if ($proj->id == $rem->preference1) {
 					$score += 4;
 				}
-				else if ($count == $rem->preference2) {
+				else if ($proj->id == $rem->preference2) {
 					$score += 3;
 				}
-				else if ($count == $rem->preference3) {
+				else if ($proj->id == $rem->preference3) {
 					$score += 2;
 				}
-				else if ($count == $rem->preference4) {
+				else if ($proj->id == $rem->preference4) {
 					$score += 1;
 				}
 				
 				if ($score > $bestScore) {
 					$bestScore = $score;
-					$bestProject = $count;
+					$bestProject = $proj->id;
 				}
 			}
 			else {
-				if($bestProject == $count) {
+				if($bestProject == $count || is_null(Project::where('projectID', '=', $bestProject))) {
 					$bestProject++;
 				}
 			}
@@ -176,7 +167,6 @@ Route::get('/GenerateTeams', function() {
 		$team->member = $rem->id;
 		$team->save();
 	}
-	
 	return Redirect::intended('/ViewTeams');
 });
 
