@@ -30,21 +30,21 @@ Route::get('/', function() {
 });
 
 Route::get('/ViewTeams', function() {
-	$numTeams = count(Team::all());
-
+	$teams = Team::all();
+	$projects = Project::all();
 	$teamIDS = array();
 	
-	for($i = 1; $i <= $numTeams; $i++) {
-		$team = Team::find($i);
+	foreach($teams as $team) {
 		$user = User::find($team->member);
 		if (!array_key_exists($team->projectID, $teamIDS)) {
 			$teamIDS[$team->projectID] = array();
 			$teamIDS[$team->projectID][0]=$team->projectID;
 		}
-		array_push($teamIDS[$team->projectID], $user->first." ".$user->last);
+		
+		array_push($teamIDS[$team->projectID], array($user->id, $user->first." ".$user->last));
 	}
 	ksort($teamIDS);
-	return View::make('field.teams')->with('teamIDS', $teamIDS);
+	return View::make('field.teams')->with('teamIDS', $teamIDS)->with('projects', $projects);
 });
 
 Route::get('/GenerateTeams', function() {
@@ -167,6 +167,17 @@ Route::get('/GenerateTeams', function() {
 		$team->member = $rem->id;
 		$team->save();
 	}
+	return Redirect::intended('/ViewTeams');
+});
+
+Route::post('MoveTo/{id}', function($id) {
+	Team::where('member', '=', $id)->delete();
+	$team = new Team;
+	$team->projectID = Input::get('select'.$id);
+	$team->member = $id;
+	
+	$team->save();
+	
 	return Redirect::intended('/ViewTeams');
 });
 

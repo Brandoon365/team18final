@@ -48,10 +48,24 @@
     margin-left: auto;
     margin-right: auto;
     display: inline;
-    width: 15%;
-    height: 150px;
+    width: 22%;
+    height: 200px;
     float: left;
-    margin: 2px;
+    margin: 1%;
     border: solid black 2px;
     text-align: center;
+}
+
+.memberContainer {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+select {
+    display: inline;
+}
+
+p {
+    display: inline;
 }
