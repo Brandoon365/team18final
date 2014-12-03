@@ -17,7 +17,9 @@
 					@if(Auth::user()->is_admin)
 						{{link_to('/admin', 'Back to Admin Page')}} <br>
 					@endif
+					<span id="logoutButton">
 					{{link_to('logout', 'Log Out')}}
+					</span>
 				@endif
 			</div>
 			<hr id="header_hr">

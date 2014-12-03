@@ -123,7 +123,7 @@ Route::get('/GenerateTeams', function() {
 			$score = 0;
 			$currentMembers = Team::where('projectID', '=', $proj->id)->get();
 			if(count($currentMembers) < $proj->max) {
-				$score += 2*($proj->min - count($currentMembers));
+				$score += 3*($proj->min - count($currentMembers));
 				
 				$preferences = Teammate::where('student', '=', $rem->id);
 				foreach ($preferences as $pref) {
@@ -205,7 +205,26 @@ Route::post('/', function() {
 
 Route::get('/student', function() {
 	if(Auth::check()) {
-		return View::make('field.form');
+		$user = Auth::user();
+		$projects = Project::all();
+		$prefer = Teammate::where('student', '=', $user->id)->where('prefer', '=', 1)->get();
+		$preferNames = array();
+		$avoidNames = array();
+		foreach($prefer as $p) {
+			$student = User::where('id', '=', $p->teammate)->get();
+			foreach($student as $s) {
+				array_push($preferNames, $s->first." ".$s->last);
+			}
+		}
+		$avoid = Teammate::where('student', '=', $user->id)->where('avoid', '=', 1)->get();
+		
+		foreach($avoid as $a) {
+			$student = User::where('id', '=', $a->teammate)->get();
+			foreach($student as $s) {
+				array_push($avoidNames, $s->first." ".$s->last);
+			}
+		}
+		return View::make('field.form')->with('user', $user)->with('preferNames', $preferNames)->with('avoidNames', $avoidNames);
 	}
 	else {
 		return Redirect::intended('/');
@@ -216,10 +235,10 @@ Route::post('/student', function() {
 	
 	$user=User::whereEmail(Auth::user()->email);
 	$userInfo = array(
-		'preference1' => Input::get('proj_0'),
-		'preference2' => Input::get('proj_1'),
-		'preference3' => Input::get('proj_2'),
-		'preference4' => Input::get('proj_3'),
+		'preference1' => Input::get('proj_1'),
+		'preference2' => Input::get('proj_2'),
+		'preference3' => Input::get('proj_3'),
+		'preference4' => Input::get('proj_4'),
 		'teamFirst' => Input::get('teamFirst'),
 	);
 
@@ -251,6 +270,29 @@ Route::get('/admin', function() {
 	else {
 		return Redirect::intended('/');
 	}
+});
+
+Route::get('/view/{id}', function($id) {
+	$user = User::where('id',$id)->get()->first();
+	$projects = Project::all();
+	$prefer = Teammate::where('student', '=', $user->id)->where('prefer', '=', 1)->get();
+	$preferNames = array();
+	$avoidNames = array();
+	foreach($prefer as $p) {
+		$student = User::where('id', '=', $p->teammate)->get();
+		foreach($student as $s) {
+			array_push($preferNames, $s->first." ".$s->last);
+		}
+	}
+	$avoid = Teammate::where('student', '=', $user->id)->where('avoid', '=', 1)->get();
+	
+	foreach($avoid as $a) {
+		$student = User::where('id', '=', $a->teammate)->get();
+		foreach($student as $s) {
+			array_push($avoidNames, $s->first." ".$s->last);
+		}
+	}
+	return View::make('field.view')->with('user', $user)->with('preferNames', $preferNames)->with('avoidNames', $avoidNames);
 });
 
 Route::get('logout', function() {
